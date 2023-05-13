@@ -4,7 +4,7 @@ require 'csv'
 class MySqliteRequest
 
     def initialize
-        @tableName     = nil
+        @tableName      = nil
         @select_attri   = []
         @where_attri    = []
         @order          = :ASC
@@ -40,7 +40,7 @@ class MySqliteRequest
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
         File.open('on_join_db.csv', 'w') {|file| file.truncate(0)}
-        tableA = get_data(@table)
+        tableA = get_data(@tableName)
         tableB = get_data(filename_db_b)
         tableA.each do |elemA|
             tableB.each do |elemB|
@@ -55,7 +55,7 @@ class MySqliteRequest
             f.puts(headers)
             f.puts(values)
         end
-        @table_name="on_join_db.csv"
+        @tableName="on_join_db.csv"
         self
     end
 
@@ -66,7 +66,7 @@ class MySqliteRequest
     end
 
     def insert(table_name)
-        @table_name = table_name
+        @tableName = table_name
         self.request_type(:insert)
         self
     end
@@ -80,13 +80,10 @@ class MySqliteRequest
         self
     end
 
-    def set(data)
-        @update_values=data
-        self
-    end
+
 
     def update(table_name)
-        @table_name = table_name
+        @tableName = table_name
         self.request_type(:update)
         self
     end
@@ -134,6 +131,9 @@ class MySqliteRequest
     end
 
     def insert_exec
+        File.open(@tableName, "a") {
+            |f| f.puts @insert_attri.values.join(',')
+        }
 
     end
 
@@ -141,6 +141,8 @@ class MySqliteRequest
     def run
         if @requestType == :select
             select_exec
+        elsif @requestType == :insert
+            insert_exec
         end
     end
 
@@ -149,11 +151,10 @@ end
 
 def main ()
   request = MySqliteRequest.new
-  request = request.from('nba_player_data.csv')
-  request = request.select('name')
-  request = request.where('name', 'Matt Zunic')
+  request = request.insert('nba_player_data.csv')
+  request = request.values({"name" => "Lebron"})
+  #request = request.where('name', 'Matt Zunic')
   p request.run
-  test  = MySqliteRequest.new
   #p test = test.from('nba_player_data.csv').select('name').where('birth_state', 'Indiana').run
   #request.run
 end
