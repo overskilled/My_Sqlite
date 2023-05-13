@@ -2,6 +2,7 @@ require 'csv'
 
 
 class MySqliteRequest
+
     def initialize
         @tableName     = nil
         @select_attri   = []
@@ -115,7 +116,7 @@ class MySqliteRequest
                 if @select_attri == ['*'] || @select_attri == ["all"]
                     @select_result << elem.to_hash
                 else
-                    @select_result << elem.to_hash.slice(@select_attri)
+                    @select_result << elem.to_hash.slice(*@select_attri)
                 end
             else
                 @where_attri.each do |attri|
@@ -123,7 +124,7 @@ class MySqliteRequest
                        if @select_attri == ['*'] || @select_attri == ["all"]
                             @select_result << elem.to_hash
                        else
-                            @select_result << elem.to_hash.slice(@select_attri)
+                            @select_result << elem.to_hash.slice(*@select_attri)
                        end
                     end
                 end
@@ -140,8 +141,6 @@ class MySqliteRequest
     def run
         if @requestType == :select
             select_exec
-        elsif @requestType == :insert
-            insert_exec
         end
     end
 
@@ -151,9 +150,11 @@ end
 def main ()
   request = MySqliteRequest.new
   request = request.from('nba_player_data.csv')
-  request = request.select("all")
+  request = request.select('name')
   request = request.where('name', 'Matt Zunic')
   p request.run
+  test  = MySqliteRequest.new
+  #p test = test.from('nba_player_data.csv').select('name').where('birth_state', 'Indiana').run
   #request.run
 end
 
