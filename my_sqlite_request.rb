@@ -3,12 +3,13 @@ require 'csv'
 
 class MySqliteRequest
     def initialize
-        @table_name     = nil
+        @tableName     = nil
         @select_attri   = []
         @where_attri    = []
+        @order          = :ASC
         @order_column   = nil
-        @insert_attri   = []
-        @update_values  = nil
+        @insert_attri   = {}
+        @update_values  = {}
         @requestType    = :none
     end
 
@@ -96,6 +97,7 @@ class MySqliteRequest
 
     def delete
         self.request_type(:delete)
+    end
 
     def get_data (filname)
         csv_data = CSV.read(filename, headers: true)
@@ -106,18 +108,53 @@ class MySqliteRequest
         @requestType = type
     end
 
+    def select_exec
+        @select_result = []
+        CSV.parse(File.read(@tableName), headers: true).each do |elem|
+            if @where_attri.empty?
+                if @select_attri == ['*'] || @select_attri == ["all"]
+                    @select_result << elem.to_hash
+                else
+                    @select_result << elem.to_hash.slice(@select_attri)
+                end
+            else
+                @where_attri.each do |attri|
+                    if elem[attri[0]] == attri[1]
+                       if @select_attri == ['*'] || @select_attri == ["all"]
+                            @select_result << elem.to_hash
+                       else
+                            @select_result << elem.to_hash.slice(@select_attri)
+                       end
+                    end
+                end
+            end
+        end
+        @select_result
+    end
 
+    def insert_exec
+
+    end
+
+
+    def run
+        if @requestType == :select
+            select_exec
+        elsif @requestType == :insert
+            insert_exec
+        end
+    end
 
 end
 
 
 def main ()
-    request = MySqliteRequest.new
-    request = request.from('nba_player_data.csv')
-    request = request.select('name')
-    request = request.print_select()
-    #request = request.where('birth_state', 'Indiana')
-    request.run
+  request = MySqliteRequest.new
+  request = request.from('nba_player_data.csv')
+  request = request.select("all")
+  request = request.where('name', 'Matt Zunic')
+  p request.run
+  #request.run
 end
 
 main()
