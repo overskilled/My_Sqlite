@@ -97,7 +97,7 @@ class MySqliteRequest
         self.request_type(:delete)
     end
 
-    def get_data (filname)
+    def get_data (filename)
         csv_data = CSV.read(filename, headers: true)
         return hash_data = csv_data.map(&:to_h)
     end
@@ -130,33 +130,60 @@ class MySqliteRequest
         @select_result
     end
 
-    def insert_exec
-        File.open(@tableName, "a") {
-            |f| f.puts @insert_attri.values.join(',')
-        }
+
+   def insert_exec
+       File.open(@tableName, "a") {
+           |f| f.puts @insert_attri.values.join(',')
+       }
+
+   end
+
+
+
+
+    def update_exec
+        found = false
+        @table = get_data(@tableName)
+        @table.each do |key, value|
+            @where_attri.each do |elem|
+              if key[elem[0]] == elem[1]
+                key.merge!(@update_values)
+                found = true
+              end
+            end
+        end
+        if found != true
+            puts "Could not find #{@where_attri[0][]} : #{@where_attri[0][1]} in file #{@tableName}"
+        end
+        File.truncate(@tableName, 66)
+        File.open(@tableName, 'a') do |f|
+                f.puts "\n"
+            @table.each do |a|
+                f.puts a.values.join(',')
+            end
+        end
 
     end
 
 
     def run
         if @requestType == :select
-            select_exec
+            p select_exec
         elsif @requestType == :insert
             insert_exec
+        elsif @requestType == :update
+            update_exec
+        else
+            puts "no request made"
         end
     end
 
 end
 
 
-def main ()
-  request = MySqliteRequest.new
-  request = request.insert('nba_player_data.csv')
-  request = request.values({"name" => "Lebron"})
-  #request = request.where('name', 'Matt Zunic')
-  p request.run
-  #p test = test.from('nba_player_data.csv').select('name').where('birth_state', 'Indiana').run
-  #request.run
-end
 
-main()
+request = MySqliteRequest.new
+request = request.update('test.csv')
+request = request.set('name' => 'Alaa yesso')
+request = request.where('name', 'Alaa Abdelnaby')
+request.run
