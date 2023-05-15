@@ -95,6 +95,7 @@ class MySqliteRequest
 
     def delete
         self.request_type(:delete)
+        self
     end
 
     def get_data (filename)
@@ -142,18 +143,13 @@ class MySqliteRequest
 
 
     def update_exec
-        found = false
         @table = get_data(@tableName)
         @table.each do |key, value|
             @where_attri.each do |elem|
               if key[elem[0]] == elem[1]
                 key.merge!(@update_values)
-                found = true
               end
             end
-        end
-        if found != true
-            puts "Could not find #{@where_attri[0][]} : #{@where_attri[0][1]} in file #{@tableName}"
         end
         File.truncate(@tableName, 66)
         File.open(@tableName, 'a') do |f|
@@ -165,6 +161,27 @@ class MySqliteRequest
 
     end
 
+    def delete_exec
+        count = 0
+        @table = get_data(@tableName)
+        @table.each do |key, value|
+            @where_attri.each do |elem|
+              if key[elem[0]] == elem[1]
+                delete_index = count
+                @table.delete_at(delete_index)
+              end
+            end
+            count += 1
+        end
+        File.truncate(@tableName, 66)
+        File.open(@tableName, 'a') do |f|
+                f.puts "\n"
+            @table.each do |a|
+                f.puts a.values.join(',')
+            end
+        end
+    end
+
 
     def run
         if @requestType == :select
@@ -173,6 +190,8 @@ class MySqliteRequest
             insert_exec
         elsif @requestType == :update
             update_exec
+        elsif @requestType == :delete
+            delete_exec
         else
             puts "no request made"
         end
@@ -183,7 +202,7 @@ end
 
 
 request = MySqliteRequest.new
-request = request.update('test.csv')
-request = request.set('name' => 'Alaa yesso')
+request = request.delete()
+request = request.from('nba_player_data.csv')
 request = request.where('name', 'Alaa Abdelnaby')
 request.run
