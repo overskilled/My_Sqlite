@@ -1,12 +1,13 @@
 require 'readline'
 require 'csv'
+require_relative 'my_sqlite_request.rb'
 
 class MySqlite
   def initialize
     @tableName      = nil
     @select_attri   = []
-    @where_attri    = []
-    @order          = :ASC
+    @where_attri    = nil
+    @where_criteria = nil
     @order_column   = nil
     @insert_attri   = {}
     @update_values  = {}
@@ -14,18 +15,17 @@ class MySqlite
   end
 
   def get_table(query)
-    query.each do |elem|
-      if ['FROM', 'INTO', 'DELETE'].include? elem.upcase
-        index = query.index(elem) + 1
-        @tableName = query[index]
+    query.each do |element|
+      if(element.upcase=="FROM" || element.upcase=="INTO" || element.upcase=="UPDATE")
+          @tableName=query[query.find_index(element) + 1]
+          break
       end
-    end
-    self
+  end
   end
 
   def get_select_column(query)
-    index_sel = nil
-    index_from = nil
+    index_sel = 0
+    index_from = 0
     query = query.map(&:upcase)
     query.each do |elem|
       if elem == 'SELECT'
@@ -35,17 +35,61 @@ class MySqlite
         index_from = query.index(elem)
       end
     end
-    @select_attri = query[(index_sel + 1)...index_from]
+    @select_attri  = query[index_sel + 1...index_from]
+    @select_attri = @select_attri.join(',').downcase.split(',')
     self
   end
 
+
+  def get_where_params (query)
+    query.each do |elem|
+      if elem.upcase == 'WHERE'
+        @where_attri = query[query.index(elem) + 1]
+      end
+      if elem == '='
+        @where_criteria = query[query.index(elem) + 1]
+      end
+    end
+  end
+
+  def select_exec(query)
+    request = MySqliteRequest.new
+    request = request.from(@tableName)
+    request = request.select(@select_attri)
+    request.run
+    self
+  end
+
+  def get_query (query)
+    get_table(query)
+    get_select_column(query)
+    self
+  end
+
+  def cli_request(query)
+    get_query(query)
+      if(query[0].upcase=="SELECT")
+          p "select"
+          select_exec(query)
+      end
+      self
+  end
+
   def run
-    p @select_attri
+    while query=Readline.readline("my sqlite cli > ", true)
+      query=query.split
+      p @select_attri
+      if(query.join == "exit")
+          exit
+      elsif
+          cli_request(query)
+      end
+      initialize
+  end
   end
 
 end
 
 
 request = MySqlite.new
-request.get_select_column(["select","all","from","moving"])
 request.run
