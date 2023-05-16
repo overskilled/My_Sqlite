@@ -201,8 +201,3 @@ end
 
 
 
-request = MySqliteRequest.new
-request = request.delete()
-request = request.from('nba_player_data.csv')
-request = request.where('name', 'Alaa Abdelnaby')
-request.run
