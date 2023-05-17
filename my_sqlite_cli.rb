@@ -9,15 +9,17 @@ class MySqlite
     @where_attri    = nil
     @where_criteria = nil
     @order_column   = nil
+    @insert_values  = []
+    @header         = []
     @insert_attri   = {}
     @update_values  = {}
     @requestType    = :none
   end
 
   def get_table(query)
-    query.each do |element|
-      if(element.upcase=="FROM" || element.upcase=="INTO" || element.upcase=="UPDATE")
-          @tableName=query[query.find_index(element) + 1]
+    query.each do |elem|
+      if(elem.upcase=="FROM" || elem.upcase=="INTO" || elem.upcase=="UPDATE")
+          @tableName = query[query.index(elem) + 1]
           break
       end
   end
@@ -52,8 +54,21 @@ class MySqlite
     end
 
     #@where_attri << [column_name, criteria]
-    p @where_attri
-    p @where_criteria
+    #p @where_attri
+    #p @where_criteria
+  end
+
+  def get_insert_values(query)
+    csv_file = CSV.read(@tableName)
+    @header = csv_file.first
+
+    query.each do |elem|
+      if elem.upcase == 'VALUES'
+        @insert_values << query[query.index(elem) + 1].slice(1..-2)
+        @insert_values = @insert_values.join.split(',')
+      end
+    end
+    @insert_attri = @header.zip(@insert_values).to_h
   end
 
   def select_exec(query)
@@ -67,18 +82,32 @@ class MySqlite
     self
   end
 
+  def insert_exec (query)
+    request = MySqliteRequest.new
+    request = request.insert(@tableName)
+    request = request.values(@insert_attri)
+    request.run
+    p "insert succefull"
+  end
+
   def get_query (query)
     get_table(query)
     get_select_column(query)
     get_where_params(query)
+    get_insert_values(query)
     self
   end
 
   def cli_request(query)
     get_query(query)
-      if(query[0].upcase=="SELECT")
+      if query[0].upcase == "SELECT"
           p "select"
           select_exec(query)
+      elsif query[0].upcase == "INSERT"
+          p "Insert"
+          insert_exec(query)
+      elsif
+          p "Update"
       end
       self
   end
