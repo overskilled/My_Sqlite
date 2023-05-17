@@ -47,15 +47,22 @@ class MySqlite
         @where_attri = query[query.index(elem) + 1]
       end
       if elem == '='
-        @where_criteria = query[query.index(elem) + 1]
+        @where_criteria  = query.slice((query.index(elem) + 1), query.length - query.index(elem)).join(' ').slice(1..-2)
       end
     end
+
+    #@where_attri << [column_name, criteria]
+    p @where_attri
+    p @where_criteria
   end
 
   def select_exec(query)
     request = MySqliteRequest.new
     request = request.from(@tableName)
     request = request.select(@select_attri)
+    if query.map(&:upcase).include? 'WHERE'
+      request = request.where(@where_attri, @where_criteria)
+    end
     request.run
     self
   end
@@ -63,6 +70,7 @@ class MySqlite
   def get_query (query)
     get_table(query)
     get_select_column(query)
+    get_where_params(query)
     self
   end
 
@@ -77,15 +85,13 @@ class MySqlite
 
   def run
     while query=Readline.readline("my sqlite cli > ", true)
-      query=query.split
-      p @select_attri
+      query = query.split
       if(query.join == "exit")
           exit
       elsif
           cli_request(query)
       end
-      initialize
-  end
+    end
   end
 
 end
