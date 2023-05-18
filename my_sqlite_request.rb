@@ -35,6 +35,7 @@ class MySqliteRequest
 
     def where(column_name, criteria)
         @where_attri << [column_name, criteria]
+        p @where_attri
         self
     end
 
@@ -158,7 +159,7 @@ class MySqliteRequest
                 f.puts a.values.join(',')
             end
         end
-
+        p @update_values
     end
 
     def delete_exec
@@ -198,6 +199,16 @@ class MySqliteRequest
     end
 
 end
+=begin
+    request = MySqliteRequest.new
+    request = request.update('test.csv')
+    request = request.set('college' => 'havard', 'position' => 'C')
+    request = request.where('name', 'Lebron')
+    request.run
+
+=end
+
+
 
 
 
