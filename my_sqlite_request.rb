@@ -35,7 +35,7 @@ class MySqliteRequest
 
     def where(column_name, criteria)
         @where_attri << [column_name, criteria]
-        p @where_attri
+        #p @where_attri
         self
     end
 
