@@ -159,7 +159,7 @@ class MySqlite
   def run
     Readline.completion_append_character = "\\x00"
     Readline.completion_proc = proc { |str| Dir[str + '*'].grep(/^#{Regexp.escape(str)}/) }
-    prompt = 'My sqlite >'
+    prompt = 'my_sqlite_cli>'
     while query = Readline.readline(prompt, true)
       query = query.split
       if(query.join == "quit")
