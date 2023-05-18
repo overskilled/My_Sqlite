@@ -49,13 +49,13 @@ class MySqlite
         @where_attri = query[query.index(elem) + 1]
       end
       if elem == '='
-        @where_criteria  = query.slice((query.index(elem) + 1), query.length - query.index(elem)).join(' ').slice(1..-2)
+        @where_criteria  = query.last.split('=').last.gsub("'", '').strip#query.slice((query.index(elem) + 1), query.length - query.index(elem)).join(' ').slice(1..-2)
       end
     end
 
     #@where_attri << [column_name, criteria]
-    #p @where_attri
-    #p @where_criteria
+    p @where_attri
+    p @where_criteria
   end
 
   def get_insert_values(query)
@@ -71,6 +71,27 @@ class MySqlite
     @insert_attri = @header.zip(@insert_values).to_h
   end
 
+  def get_update_values(query)
+    index1 = 0
+    index2 = 0
+    str = nil
+    query.each do |elem|
+      if elem == 'SET'
+        index1 = query.index(elem)
+      end
+      if elem == 'WHERE'
+        index2= query.index(elem)
+      end
+    end
+    str  = query[index1 + 1...index2].join(" ")
+
+    str.split(", ").each do |pair|
+      key, value = pair.split(" = ")
+      @update_values[key.gsub("'", "")] = value.gsub("'", "")
+    end
+
+  end
+
   def select_exec(query)
     request = MySqliteRequest.new
     request = request.from(@tableName)
@@ -82,7 +103,7 @@ class MySqlite
     self
   end
 
-  def insert_exec (query)
+  def insert_exec(query)
     request = MySqliteRequest.new
     request = request.insert(@tableName)
     request = request.values(@insert_attri)
@@ -90,11 +111,22 @@ class MySqlite
     p "insert succefull"
   end
 
-  def get_query (query)
+  def update_exec (query)
+    request = MySqliteRequest.new
+    request = request.update(@tableName)
+    request = request.set(@update_values)
+    if query.map(&:upcase).include? 'WHERE'
+      request = request.where(@where_attri, @where_criteria)
+    end
+    request.run
+  end
+
+  def get_query(query)
     get_table(query)
     get_select_column(query)
     get_where_params(query)
     get_insert_values(query)
+    get_update_values(query)
     self
   end
 
@@ -106,14 +138,18 @@ class MySqlite
       elsif query[0].upcase == "INSERT"
           p "Insert"
           insert_exec(query)
-      elsif
+      elsif query[0].upcase == "UPDATE"
           p "Update"
+          update_exec(query)
       end
       self
   end
 
   def run
-    while query=Readline.readline("my sqlite cli > ", true)
+    Readline.completion_append_character = "\\x00"
+    Readline.completion_proc = proc { |str| Dir[str + '*'].grep(/^#{Regexp.escape(str)}/) }
+    prompt = 'My sqlite >'
+    while query = Readline.readline(prompt, true)
       query = query.split
       if(query.join == "exit")
           exit
