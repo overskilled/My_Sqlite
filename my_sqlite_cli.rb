@@ -54,8 +54,8 @@ class MySqlite
     end
 
     #@where_attri << [column_name, criteria]
-    p @where_attri
-    p @where_criteria
+    #p @where_attri
+    #p @where_criteria
   end
 
   def get_insert_values(query)
@@ -121,26 +121,37 @@ class MySqlite
     request.run
   end
 
+  def delete_exec(query)
+    request = MySqliteRequest.new
+    request = request.delete
+    request = request.from(@tableName)
+    request = request.where(@where_attri, @where_criteria)
+    request.run
+  end
+
   def get_query(query)
     get_table(query)
     get_select_column(query)
     get_where_params(query)
     get_insert_values(query)
-    get_update_values(query)
+    get_update_values(query) if query[0].upcase == "UPDATE"
     self
   end
 
   def cli_request(query)
     get_query(query)
       if query[0].upcase == "SELECT"
-          p "select"
+          #p "select"
           select_exec(query)
       elsif query[0].upcase == "INSERT"
-          p "Insert"
+          #p "Insert"
           insert_exec(query)
       elsif query[0].upcase == "UPDATE"
-          p "Update"
+          #p "Update"
           update_exec(query)
+      elsif query[0].upcase == "DELETE"
+          p "delete"
+          delete_exec(query)
       end
       self
   end
