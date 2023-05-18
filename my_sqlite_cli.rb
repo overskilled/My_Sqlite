@@ -162,7 +162,7 @@ class MySqlite
     prompt = 'My sqlite >'
     while query = Readline.readline(prompt, true)
       query = query.split
-      if(query.join == "exit")
+      if(query.join == "quit")
           exit
       elsif
           cli_request(query)
