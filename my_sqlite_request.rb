@@ -159,7 +159,7 @@ class MySqliteRequest
                 f.puts a.values.join(',')
             end
         end
-        p @update_values
+        #p @update_values
     end
 
     def delete_exec
