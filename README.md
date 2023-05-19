@@ -21,10 +21,10 @@ This project is created using :
 * Readline module
 
 ### Ruby
-This project require the use of various features availaible on ruby such as **class**, where it was required to create a class called **MySqliteRequest** in the file [my_sqlite_request.rb](my_sqlite_request.rb), amd a **class** called **MySqlite** in the file [my_sqlite_cli.rb](my_sqlite_cli.rb). Whhere vatious methods where implemented in other to process the data entered in the request
+This project require the use of various features availiable on ruby such as **class**, where it was required to create a class called **MySqliteRequest** in the file [my_sqlite_request.rb](my_sqlite_request.rb), and a **class** called **MySqlite** in the file [my_sqlite_cli.rb](my_sqlite_cli.rb). In this classes, various methods where implemented in other to process the data entered in the request
 
 ### READLINE module
-This project require the implementation of a cli. This was made posible by the use of the readline module. The CLI allows users to copy and paste texte using **Ctrl + Shift + c and Ctrl + Shift + v** respectively. The text write will be taking as query and if it respects the sqlite syntax/format, the demanded operation will be executed.
+This project require the implementation of a **CLI**. This was made posible by the use of the readline module. The CLI allows users to copy and paste texte using **Ctrl + Shift + c and Ctrl + Shift + v** respectively. The text write will be taking as query and if it respects the sqlite syntax/format, the demanded operation will be executed.
 
 To exit the CLI simply type in **quit**
 
